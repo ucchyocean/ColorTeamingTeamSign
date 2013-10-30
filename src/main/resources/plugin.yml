@@ -1,0 +1,28 @@
+name: ColorTeamingTeamSign
+version: 0.1.0
+main: com.github.ucchyocean.ctts.ColorTeamingTeamSign
+description: Team Sign for ColorTeaming
+author: ucchy
+depend: [ColorTeaming]
+
+permissions:
+  ctteamsign.user.use:
+    description: Allows to use the Team Sign.
+    default: true
+  ctteamsign.user.*:
+    children:
+      ctteamsign.user.use: true
+  ctteamsign.admin.place:
+    description: Allows to place new Team Sign.
+    default: op
+  ctteamsign.admin.break:
+    description: Allows to break the Team Sign.
+    default: op
+  ctteamsign.admin.toggle:
+    description: Allows to toggle active/inactive the Team Sign.
+    default: op
+  ctteamsign.admin.*:
+    children:
+      ctteamsign.admin.place: true
+      ctteamsign.admin.break: true
+      ctteamsign.admin.toggle: true
