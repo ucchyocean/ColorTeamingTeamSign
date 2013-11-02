@@ -36,7 +36,7 @@ public class TeamSignListener implements Listener {
     
     private static final String MSG_PRE = "[CTTS]";
     private static final String MSG_PRE_ERR = ChatColor.RED + MSG_PRE;
-    private static final String MSG_NOT_EXIST_CLASS = 
+    private static final String MSG_NOT_EXIST_TEAM = 
             MSG_PRE_ERR + "指定されたチームが存在しません。";
     private static final String MSG_NOT_HAVE_PERMISSION_PLACE = 
             MSG_PRE_ERR + "権限が無いためチームサインを設置できません。";
@@ -47,6 +47,10 @@ public class TeamSignListener implements Listener {
             MSG_PRE_ERR + "現在チームへの参加は許可されていません。";
     private static final String MSG_DISABLE_CONFIG_LEAVE = 
             MSG_PRE_ERR + "現在チームからの離脱は許可されていません。";
+    private static final String MSG_ALREADY_IN_TEAM = 
+            MSG_PRE_ERR + "あなたは既に、チームに所属しています。";
+    private static final String MSG_NOT_IN_TEAM = 
+            MSG_PRE_ERR + "あなたはチームに所属していません。";
     
     private ColorTeamingBridge bridge;
     
@@ -75,7 +79,7 @@ public class TeamSignListener implements Listener {
         
         // 関係のないカンバンなら無視する
         if (!sign.getLine(0).equals(FIRST_LINE_JOIN) 
-                || !sign.getLine(0).equals(FIRST_LINE_LEAVE)) {
+                && !sign.getLine(0).equals(FIRST_LINE_LEAVE)) {
             return;
         }
         
@@ -103,34 +107,53 @@ public class TeamSignListener implements Listener {
             String tname = sign.getLine(1);
             if ( isJoin && !tname.equals("") && !bridge.isExistTeam(tname) ) {
                 // 指定されたクラスが既に存在しない
-                player.sendMessage(MSG_NOT_EXIST_CLASS);
+                player.sendMessage(MSG_NOT_EXIST_TEAM);
                 return;
             }
             
-            
-            if ( isJoin && tname.equals("") ) {
-                // 人数の少ないチームを設定する
-                boolean result = bridge.addPlayerToRestTeam(player);
-                if ( !result ) {
-                    player.sendMessage(MSG_DISABLE_CONFIG_JOIN);
+            // チーム参加離脱の設定が有効かどうかを確認してから、
+            // 設定を実行する
+            if ( isJoin ) {
+                
+                // 既にチームに所属しているのかどうかを確認する
+                if ( bridge.isPlayerInTeam(player) ) {
+                    player.sendMessage(MSG_ALREADY_IN_TEAM);
                     return;
                 }
                 
-            } else if ( isJoin ) {
-                // 指定されたチームを設定する
-                boolean result = bridge.addPlayerToTeam(player, tname);
-                if ( !result ) {
-                    player.sendMessage(MSG_DISABLE_CONFIG_JOIN);
-                    return;
+                if ( tname.equals("") ) {
+                    // 人数の少ないチームを設定する
+                    if ( !bridge.isAllowPlayerJoinRandom() ) {
+                        player.sendMessage(MSG_DISABLE_CONFIG_JOIN);
+                        return;
+                    }
+                    bridge.addPlayerToRestTeam(player);
+                    
+                } else {
+                    // 指定されたチームを設定する
+                    if ( !bridge.isAllowPlayerJoinAny() ) {
+                        player.sendMessage(MSG_DISABLE_CONFIG_JOIN);
+                        return;
+                    }
+                    bridge.addPlayerToTeam(player, tname);
+                    
                 }
                 
             } else {
+                
+                // 既にチームに所属しているのかどうかを確認する
+                if ( !bridge.isPlayerInTeam(player) ) {
+                    player.sendMessage(MSG_NOT_IN_TEAM);
+                    return;
+                }
+                
                 // チームから離脱させる
-                boolean result = bridge.leavePlayerFromTeam(player);
-                if ( !result ) {
+                if ( !bridge.isAllowPlayerLeave() ) {
                     player.sendMessage(MSG_DISABLE_CONFIG_LEAVE);
                     return;
                 }
+                bridge.leavePlayerFromTeam(player);
+                
             }
             
             return;
@@ -164,7 +187,7 @@ public class TeamSignListener implements Listener {
         
         // 関係のないカンバンなら無視する
         if (!event.getLine(0).equals(FIRST_LINE_JOIN) 
-                || !event.getLine(0).equals(FIRST_LINE_LEAVE)) {
+                && !event.getLine(0).equals(FIRST_LINE_LEAVE)) {
             return;
         }
         
@@ -185,7 +208,7 @@ public class TeamSignListener implements Listener {
         String tname = event.getLine(1);
         if ( isJoin && !tname.equals("") && !bridge.isExistTeam(tname) ) {
             // 指定されたクラスが存在しない
-            player.sendMessage(MSG_NOT_EXIST_CLASS);
+            player.sendMessage(MSG_NOT_EXIST_TEAM);
             event.setLine(0, "");
             return;
         }
@@ -209,7 +232,7 @@ public class TeamSignListener implements Listener {
         
         Sign sign = (Sign) block;
         if (!sign.getLine(0).equals(FIRST_LINE_JOIN) 
-                || !sign.getLine(0).equals(FIRST_LINE_LEAVE)) {
+                && !sign.getLine(0).equals(FIRST_LINE_LEAVE)) {
             // 関係のないカンバンなら無視する
             return;
         }

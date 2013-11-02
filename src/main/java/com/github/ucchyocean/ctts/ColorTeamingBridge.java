@@ -54,11 +54,20 @@ public class ColorTeamingBridge {
     }
     
     /**
+     * 指定されたプレイヤーが、既にチームに所属しているかどうかを確認する
+     * @param player プレイヤー
+     * @return 所属しているかどうか
+     */
+    public boolean isPlayerInTeam(Player player) {
+        return (colorteaming.getAPI().getPlayerTeam(player) != null);
+    }
+    
+    /**
      * TeamNameSettingを取得する
      * @param name チーム名、チーム表示名でも可
      * @return TeamNameSetting
      */
-    public TeamNameSetting getTeamNameSetting(String name) {
+    private TeamNameSetting getTeamNameSetting(String name) {
         
         TeamNameConfig config = colorteaming.getAPI().getTeamNameConfig();
         if ( config.containsID(name) ) {
@@ -82,10 +91,6 @@ public class ColorTeamingBridge {
      */
     public boolean addPlayerToTeam(Player player, String name) {
         
-        if ( !colorteaming.getCTConfig().isAllowPlayerJoinAny() ) {
-            return false;
-        }
-        
         TeamNameSetting teamName = getTeamNameSetting(name);
         if ( teamName == null ) {
             return false;
@@ -93,7 +98,16 @@ public class ColorTeamingBridge {
         
         ColorTeamingAPI api = colorteaming.getAPI();
         
-        return (api.addPlayerTeam(player, teamName) != null);
+        boolean result = (api.addPlayerTeam(player, teamName) != null);
+        
+        if ( !result ) {
+            return false;
+        }
+        
+        // サイドバー更新
+        api.makeSidebarScore();
+        
+        return true;
     }
     
     /**
@@ -102,10 +116,6 @@ public class ColorTeamingBridge {
      * @return チーム設定を実行したかどうか
      */
     public boolean addPlayerToRestTeam(Player player) {
-        
-        if ( !colorteaming.getCTConfig().isAllowPlayerJoinRandom() ) {
-            return false;
-        }
         
         ColorTeamingAPI api = colorteaming.getAPI();
         ArrayList<Player> players = new ArrayList<Player>();
@@ -120,15 +130,37 @@ public class ColorTeamingBridge {
      */
     public boolean leavePlayerFromTeam(Player player) {
         
-        if ( !colorteaming.getCTConfig().isAllowPlayerLeave() ) {
-            return false;
-        }
-        
         ColorTeamingAPI api = colorteaming.getAPI();
         if ( api.getPlayerTeam(player) == null ) {
             return false;
         }
+        
         api.leavePlayerTeam(player, Reason.SELF);
+        
+        // サイドバー更新
+        api.makeSidebarScore();
+        
         return true;
+    }
+    
+    /**
+     * @return isAllowPlayerJoinAny 設定をかえす
+     */
+    public boolean isAllowPlayerJoinAny() {
+        return colorteaming.getCTConfig().isAllowPlayerJoinAny();
+    }
+    
+    /**
+     * @return isAllowPlayerJoinRandom 設定をかえす
+     */
+    public boolean isAllowPlayerJoinRandom() {
+        return colorteaming.getCTConfig().isAllowPlayerJoinRandom();
+    }
+    
+    /**
+     * @return isAllowPlayerLeave 設定をかえす
+     */
+    public boolean isAllowPlayerLeave() {
+        return colorteaming.getCTConfig().isAllowPlayerLeave();
     }
 }
