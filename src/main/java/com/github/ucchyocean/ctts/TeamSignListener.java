@@ -51,6 +51,8 @@ public class TeamSignListener implements Listener {
             MSG_PRE_ERR + "あなたは既に、チームに所属しています。";
     private static final String MSG_NOT_IN_TEAM = 
             MSG_PRE_ERR + "あなたはチームに所属していません。";
+    private static final String MSG_EXCEEDED_MEMBER =
+            MSG_PRE_ERR + "参加可能人数を超えたため、参加できません。";
     
     private ColorTeamingBridge bridge;
     
@@ -122,19 +124,36 @@ public class TeamSignListener implements Listener {
                 }
                 
                 if ( tname.equals("") ) {
-                    // 人数の少ないチームを設定する
+                    
+                    // AllowPlayerJoinRandom が有効かどうか確認する
                     if ( !bridge.isAllowPlayerJoinRandom() ) {
                         player.sendMessage(MSG_DISABLE_CONFIG_JOIN);
                         return;
                     }
+                    
+                    // 人数の少ないチームを設定する
                     bridge.addPlayerToRestTeam(player);
                     
                 } else {
-                    // 指定されたチームを設定する
+                    
+                    // 参加可能人数が設定されている場合、
+                    // 参加可能人数を超えていないかどうか確認する
+                    if ( sign.getLine(2).matches("[0-9]+") ) {
+                        int border = Integer.parseInt(sign.getLine(2));
+                        int member = bridge.getTeamMemberNum(tname);
+                        if ( member >= border ) {
+                            player.sendMessage(MSG_EXCEEDED_MEMBER);
+                            return;
+                        }
+                    }
+                    
+                    // AllowPlayerJoinAny が有効かどうか確認する
                     if ( !bridge.isAllowPlayerJoinAny() ) {
                         player.sendMessage(MSG_DISABLE_CONFIG_JOIN);
                         return;
                     }
+                    
+                    // 指定されたチームを設定する
                     bridge.addPlayerToTeam(player, tname);
                     
                 }
@@ -147,11 +166,13 @@ public class TeamSignListener implements Listener {
                     return;
                 }
                 
-                // チームから離脱させる
+                // AllowPlayerLeave が有効かどうか確認する
                 if ( !bridge.isAllowPlayerLeave() ) {
                     player.sendMessage(MSG_DISABLE_CONFIG_LEAVE);
                     return;
                 }
+                
+                // チームから離脱させる
                 bridge.leavePlayerFromTeam(player);
                 
             }

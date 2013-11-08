@@ -144,6 +144,27 @@ public class ColorTeamingBridge {
     }
     
     /**
+     * 指定のチームの人数をかえす
+     * @param name チーム名
+     * @return チーム人数
+     */
+    public int getTeamMemberNum(String name) {
+        
+        TeamNameSetting teamName = getTeamNameSetting(name);
+        if ( teamName == null ) {
+            return 0; // チームがない場合は 0 をかえす
+        }
+        
+        ColorTeamingAPI api = colorteaming.getAPI();
+        ArrayList<Player> members = api.getTeamMembers(teamName.getID());
+        if ( members == null ) {
+            return 0; // チームが編成されていない場合は 0 をかえす
+        }
+        
+        return members.size();
+    }
+    
+    /**
      * @return isAllowPlayerJoinAny 設定をかえす
      */
     public boolean isAllowPlayerJoinAny() {
