@@ -24,9 +24,9 @@ public class ColorTeamingTeamSign extends JavaPlugin {
         // ColorTeamingの取得、dependに指定しているので必ず取得できる。
         Plugin colorteaming = getServer().getPluginManager().getPlugin("ColorTeaming");
         String ctversion = colorteaming.getDescription().getVersion();
-        if ( !isUpperVersion(ctversion, "2.2.5") ) {
+        if ( !isUpperVersion(ctversion, "2.3.0") ) {
             getLogger().warning("ColorTeaming のバージョンが古いため、ColorTeamingTeamSign が使用できません。");
-            getLogger().warning("ColorTeaming v2.2.5 以降のバージョンをご利用ください。");
+            getLogger().warning("ColorTeaming v2.3.0 以降のバージョンをご利用ください。");
             getServer().getPluginManager().disablePlugin(this);
             return;
         }

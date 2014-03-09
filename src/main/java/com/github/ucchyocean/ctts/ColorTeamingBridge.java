@@ -105,7 +105,7 @@ public class ColorTeamingBridge {
         }
         
         // サイドバー更新
-        api.makeSidebarScore();
+        api.refreshRestTeamMemberScore();
         
         return true;
     }
@@ -138,7 +138,7 @@ public class ColorTeamingBridge {
         api.leavePlayerTeam(player, Reason.SELF);
         
         // サイドバー更新
-        api.makeSidebarScore();
+        api.refreshRestTeamMemberScore();
         
         return true;
     }

@@ -1,5 +1,5 @@
-name: ColorTeamingTeamSign
-version: 0.2.0
+name: ${project.name}
+version: ${project.version}
 main: com.github.ucchyocean.ctts.ColorTeamingTeamSign
 description: Team Sign for ColorTeaming
 author: ucchy
